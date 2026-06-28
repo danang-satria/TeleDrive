@@ -1,0 +1,19 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model File {
+  id                String   @id @default(uuid())
+  name              String
+  size              Int
+  mimeType          String
+  telegramMessageId Int      @unique
+  isDeleted         Boolean  @default(false)
+  deletedAt         DateTime?
+  createdAt         DateTime @default(now())
+}
