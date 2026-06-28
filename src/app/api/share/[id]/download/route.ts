@@ -28,7 +28,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     const buffer = await client.downloadMedia(message, {});
     if (!buffer) return new NextResponse("Failed to download", { status: 500 });
     
-    return new NextResponse(buffer, {
+    return new NextResponse(buffer as any, {
       headers: {
         "Content-Disposition": `attachment; filename="${link.file.name}"`,
         "Content-Type": link.file.mimeType || "application/octet-stream",

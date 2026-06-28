@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getTelegramClient } from "@/lib/telegram";
+import bigInt from "big-integer";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -39,7 +40,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         try {
           for await (const chunk of client.iterDownload({ 
             file: message.media, 
-            offset, 
+            offset: bigInt(offset), 
             limit,
             requestSize: 1024 * 1024 // 1MB chunks
           })) {

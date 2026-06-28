@@ -1,5 +1,5 @@
 "use client";
-import { Folder, MoreVertical, Link as LinkIcon, Trash2 } from "lucide-react";
+import { Folder, MoreVertical, Link as LinkIcon, Trash2, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
@@ -8,13 +8,17 @@ export default function FolderList({ folders, onRefresh }: { folders: any[], onR
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [selectedFolders, setSelectedFolders] = useState<Set<string>>(new Set());
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [menuPos, setMenuPos] = useState<{ x: number, y: number } | null>(null);
 
   useEffect(() => {
     setSelectedFolders(new Set());
   }, [folders]);
 
   useEffect(() => {
-    const handleClickOutside = () => setActiveMenuId(null);
+    const handleClickOutside = () => {
+      setActiveMenuId(null);
+      setMenuPos(null);
+    };
     window.addEventListener("click", handleClickOutside);
     return () => window.removeEventListener("click", handleClickOutside);
   }, []);
@@ -165,6 +169,11 @@ export default function FolderList({ folders, onRefresh }: { folders: any[], onR
             onDragOver={(e) => handleDragOver(e, folder.id)}
             onDragLeave={() => setDragOverId(null)}
             onDrop={(e) => handleDrop(e, folder.id)}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              setActiveMenuId(folder.id);
+              setMenuPos({ x: e.clientX, y: e.clientY });
+            }}
             className={`flex items-center justify-between p-3.5 rounded-2xl cursor-pointer transition-all group select-none border border-transparent ${
               dragOverId === folder.id 
                 ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/50' 
@@ -182,7 +191,7 @@ export default function FolderList({ folders, onRefresh }: { folders: any[], onR
             
             <div className="relative shrink-0 ml-2">
               <button 
-                onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === folder.id ? null : folder.id); }}
+                onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === folder.id ? null : folder.id); setMenuPos(null); }}
                 className="p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
               >
                 <MoreVertical className="w-4 h-4" />
@@ -190,9 +199,13 @@ export default function FolderList({ folders, onRefresh }: { folders: any[], onR
               
               {activeMenuId === folder.id && (
                 <div 
-                  className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1 z-50 overflow-hidden"
+                  className={`${menuPos ? 'fixed' : 'absolute right-0 top-full mt-1'} w-44 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1 z-50 overflow-hidden`}
+                  style={menuPos ? { left: menuPos.x, top: menuPos.y } : undefined}
                   onClick={(e) => e.stopPropagation()}
                 >
+                  <button onClick={() => { window.open(`/api/folders/${folder.id}/download`, '_blank'); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors text-left">
+                    <Download className="w-4 h-4" /> Download ZIP
+                  </button>
                   <button onClick={() => { handleShare(folder.id); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors text-left">
                     <LinkIcon className="w-4 h-4" /> Get Share Link
                   </button>

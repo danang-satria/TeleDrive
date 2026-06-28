@@ -4,6 +4,23 @@ import { deleteFromTelegram } from "@/lib/telegram";
 
 export async function GET() {
   try {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const expiredFiles = await prisma.file.findMany({
+      where: {
+        isDeleted: true,
+        deletedAt: { lt: thirtyDaysAgo }
+      }
+    });
+
+    if (expiredFiles.length > 0) {
+      await Promise.allSettled(expiredFiles.map(f => deleteFromTelegram(f.telegramMessageId)));
+      await prisma.file.deleteMany({
+        where: { id: { in: expiredFiles.map(f => f.id) } }
+      });
+    }
+
     const files = await prisma.file.findMany({
       where: { isDeleted: true },
       orderBy: { deletedAt: "desc" },

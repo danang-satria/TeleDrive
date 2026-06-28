@@ -7,13 +7,13 @@ export async function GET() {
   try {
     const agg = await prisma.file.aggregate({
       _sum: { size: true },
-      _count: { id: true },
+      _count: true,
       where: { isDeleted: false }
     });
 
     return NextResponse.json({
-      totalSize: agg._sum.size || 0,
-      totalFiles: agg._count.id || 0,
+      totalSize: agg._sum?.size || 0,
+      totalFiles: agg._count || 0,
     });
   } catch (error) {
     console.error(error);
