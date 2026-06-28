@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { FileIcon, Download, Trash2, FileText, Image, Video, FileArchive, RefreshCcw } from "lucide-react";
+import { FileIcon, Download, Trash2, FileText, Image as ImageIcon, Video, FileArchive, RefreshCcw, Share2, Link, MoreVertical } from "lucide-react";
 
 export type FileRecord = {
   id: string;
@@ -19,33 +19,41 @@ const formatSize = (bytes: number) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-const getIcon = (mimeType: string) => {
-  if (mimeType.startsWith("image/")) return <Image className="w-8 h-8 text-blue-500" />;
-  if (mimeType.startsWith("video/")) return <Video className="w-8 h-8 text-purple-500" />;
-  if (mimeType.includes("zip") || mimeType.includes("tar") || mimeType.includes("rar")) return <FileArchive className="w-8 h-8 text-orange-500" />;
-  if (mimeType.includes("pdf") || mimeType.includes("text")) return <FileText className="w-8 h-8 text-red-500" />;
-  return <FileIcon className="w-8 h-8 text-slate-500" />;
+const getIcon = (mimeType: string, className = "w-16 h-16") => {
+  if (mimeType.startsWith("image/")) return <ImageIcon className={`${className} text-blue-500`} />;
+  if (mimeType.startsWith("video/")) return <Video className={`${className} text-purple-500`} />;
+  if (mimeType.includes("zip") || mimeType.includes("tar") || mimeType.includes("rar")) return <FileArchive className={`${className} text-orange-500`} />;
+  if (mimeType.includes("pdf") || mimeType.includes("text")) return <FileText className={`${className} text-red-500`} />;
+  return <FileIcon className={`${className} text-slate-500`} />;
 };
 
 export default function FileList({ 
-  files: initialFiles, 
+  files, 
   onDelete, 
-  isGridView,
+  isGridView = true,
   endpoint = "/api/files",
-  isTrash = false
+  isTrash = false 
 }: { 
   files: FileRecord[], 
   onDelete: (id: string) => void, 
   onRestore?: (id: string) => void,
-  isGridView: boolean,
+  isGridView?: boolean,
   endpoint?: string,
   isTrash?: boolean 
 }) {
-  const [files, setFiles] = useState<FileRecord[]>(initialFiles);
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    setFiles(initialFiles);
-  }, [initialFiles]);
+    // Reset selection when switching folders or viewing different file sets
+    setSelectedFiles(new Set());
+  }, [files]);
+
+  useEffect(() => {
+    const handleClickOutside = () => setActiveMenuId(null);
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, []);
 
   const handleDelete = async (id: string) => {
     await fetch(`${endpoint}/${id}`, { method: 'DELETE' });
@@ -55,6 +63,79 @@ export default function FileList({
   const handleRestore = async (id: string) => {
     await fetch(`${endpoint}/${id}`, { method: 'PUT' });
     window.location.reload();
+  };
+
+  const handleShare = async (id: string) => {
+    try {
+      const res = await fetch(`/api/share`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileId: id })
+      });
+      const data = await res.json();
+      if (data.url) {
+        const fullUrl = `${window.location.origin}${data.url}`;
+        await navigator.clipboard.writeText(fullUrl);
+        alert('Public link copied to clipboard!');
+      }
+    } catch (e) {
+      alert('Failed to generate link');
+    }
+  };
+
+  const handleDragStart = (e: React.DragEvent, fileId: string) => {
+    const idsToDrag = selectedFiles.has(fileId) ? Array.from(selectedFiles) : [fileId];
+    
+    e.dataTransfer.setData("application/json", JSON.stringify({
+      type: "files",
+      ids: idsToDrag
+    }));
+    e.dataTransfer.effectAllowed = "move";
+
+    if (idsToDrag.length > 1) {
+      const badge = document.createElement("div");
+      badge.textContent = idsToDrag.length.toString();
+      // Apply inline styles to ensure it renders correctly outside the React DOM
+      Object.assign(badge.style, {
+        backgroundColor: '#2563eb', // blue-600
+        color: 'white',
+        width: '32px',
+        height: '32px',
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontWeight: 'bold',
+        position: 'absolute',
+        top: '-1000px',
+        left: '-1000px',
+        zIndex: '9999',
+        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+        border: '2px solid white'
+      });
+      document.body.appendChild(badge);
+      e.dataTransfer.setDragImage(badge, 16, 16);
+      
+      // Clean up badge immediately after setting it as drag image
+      setTimeout(() => {
+        if (document.body.contains(badge)) {
+          document.body.removeChild(badge);
+        }
+      }, 0);
+    }
+  };
+
+  const toggleSelect = (id: string, e: React.MouseEvent) => {
+    // Prevent selection when clicking on buttons or links
+    if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('a')) return;
+    
+    const newSet = new Set(selectedFiles);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedFiles(newSet);
   };
 
   if (files.length === 0) {
@@ -69,82 +150,116 @@ export default function FileList({
 
   if (isGridView) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {files.map(file => (
-          <div key={file.id} className="group relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all">
-            <div className="w-full h-32 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center border-b border-slate-100 dark:border-slate-800 relative">
-              {file.mimeType.startsWith('image/') ? (
-                // eslint-disable-next-line @next/next/no-img-element
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        {files.map(file => {
+          const isSelected = selectedFiles.has(file.id);
+          return (
+          <div 
+            key={file.id} 
+            draggable
+            onDragStart={(e) => handleDragStart(e, file.id)}
+            onClick={(e) => toggleSelect(file.id, e)}
+            className={`group relative bg-slate-100 dark:bg-[#28292c] rounded-2xl overflow-hidden hover:bg-slate-200 dark:hover:bg-[#343538] transition-all cursor-move flex flex-col select-none border border-transparent ${isSelected ? 'border-blue-500 bg-blue-100 dark:bg-blue-900/40 text-blue-900 dark:text-blue-100' : ''}`}
+          >
+            <div className={`w-full aspect-[4/3] flex items-center justify-center relative overflow-hidden ${isSelected ? 'bg-blue-50/50 dark:bg-blue-900/20' : 'bg-white dark:bg-[#1a1c1e]'}`}>
+              {file.mimeType.startsWith('image/') || file.mimeType.startsWith('video/') ? (
                 <img 
-                  src={`${endpoint}/${file.id}?view=true`} 
+                  src={`${endpoint}/${file.id}/thumb`} 
                   alt={file.name} 
                   className="w-full h-full object-cover" 
                   loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.parentElement?.classList.add('fallback-icon');
+                  }}
                 />
               ) : (
-                getIcon(file.mimeType)
+                getIcon(file.mimeType, 'w-16 h-16 mx-auto opacity-70')
               )}
+              <div className="hidden fallback-icon-container absolute inset-0 flex items-center justify-center">
+                {getIcon(file.mimeType, 'w-16 h-16 mx-auto opacity-70')}
+              </div>
             </div>
-            <div className="p-3">
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate w-full text-center" title={file.name}>
-                {file.name}
-              </p>
-              <p className="text-xs text-slate-500 text-center mt-1">{formatSize(file.size)}</p>
-            </div>
-            
-            <div className="absolute inset-0 bg-white/90 dark:bg-slate-900/90 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition-opacity">
-              {!isTrash ? (
-                <a 
-                  href={`${endpoint}/${file.id}`}
-                  target="_blank"
-                  download
-                  className="p-2 bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
-                  title="Download"
-                >
-                  <Download className="w-4 h-4" />
-                </a>
-              ) : (
+
+            <div className="flex items-center justify-between p-3 gap-2">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                {getIcon(file.mimeType, 'w-5 h-5 shrink-0')}
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate" title={file.name}>
+                  {file.name}
+                </span>
+              </div>
+              
+              <div className="relative shrink-0">
                 <button 
-                  onClick={() => handleRestore(file.id)}
-                  className="p-2 bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-400 rounded-full hover:bg-green-200 dark:hover:bg-green-800 transition-colors"
-                  title="Restore"
+                  onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === file.id ? null : file.id); }}
+                  className="p-1.5 rounded-full hover:bg-slate-300/50 dark:hover:bg-slate-700/50 text-slate-500 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
                 >
-                  <RefreshCcw className="w-4 h-4" />
+                  <MoreVertical className="w-4 h-4" />
                 </button>
-              )}
-              <button 
-                onClick={() => handleDelete(file.id)}
-                className="p-2 bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400 rounded-full hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
-                title="Delete"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+                
+                {activeMenuId === file.id && (
+                  <div 
+                    className="absolute right-0 bottom-full mb-1 w-44 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1 z-50 overflow-hidden"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {!isTrash && (
+                      <>
+                        <a href={`${endpoint}/${file.id}`} target="_blank" download className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors">
+                          <Download className="w-4 h-4" /> Download
+                        </a>
+                        <button onClick={() => { handleShare(file.id); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors text-left">
+                          <Link className="w-4 h-4" /> Get Share Link
+                        </button>
+                        <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
+                        <button onClick={() => { handleDelete(file.id); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left">
+                          <Trash2 className="w-4 h-4" /> Move to Trash
+                        </button>
+                      </>
+                    )}
+                    {isTrash && (
+                      <button onClick={() => { handleRestore(file.id); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors text-left">
+                        <RefreshCcw className="w-4 h-4" /> Restore File
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        ))}
+        )})}
       </div>
     );
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
       <table className="w-full text-left border-collapse">
         <thead>
-          <tr className="bg-slate-50 border-b border-slate-200 text-sm font-medium text-slate-500">
+          <tr className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-500">
             <th className="px-6 py-3">Name</th>
             <th className="px-6 py-3 hidden md:table-cell">Date Modified</th>
             <th className="px-6 py-3 hidden sm:table-cell">Size</th>
             <th className="px-6 py-3 text-right">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">
-          {files.map(file => (
-            <tr key={file.id} className="hover:bg-slate-50 transition-colors group">
-              <td className="px-6 py-4 flex items-center gap-3">
-                {getIcon(file.mimeType)}
-                <span className="text-sm font-medium text-slate-700 max-w-[200px] md:max-w-xs lg:max-w-md truncate" title={file.name}>
-                  {file.name}
-                </span>
+        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          {files.map(file => {
+            const isSelected = selectedFiles.has(file.id);
+            return (
+            <tr 
+              key={file.id} 
+              draggable
+              onClick={(e) => toggleSelect(file.id, e)}
+              onDragStart={(e) => handleDragStart(e, file.id)}
+              className={`group transition-colors cursor-move ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+            >
+              <td className="px-6 py-4 whitespace-nowrap">
+                <div className="flex items-center gap-3">
+                  {getIcon(file.mimeType, 'w-8 h-8')}
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 max-w-[200px] md:max-w-xs lg:max-w-md truncate" title={file.name}>
+                    {file.name}
+                  </span>
+                </div>
               </td>
               <td className="px-6 py-4 text-sm text-slate-500 hidden md:table-cell">
                 {format(new Date(file.createdAt), "MMM d, yyyy")}
@@ -153,34 +268,44 @@ export default function FileList({
                 {formatSize(file.size)}
               </td>
               <td className="px-6 py-4 text-right">
-                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  {!isTrash ? (
-                    <a 
-                      href={`${endpoint}/${file.id}`}
-                      target="_blank"
-                      download
-                      className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                    >
-                      <Download className="w-4 h-4" />
-                    </a>
-                  ) : (
-                    <button 
-                      onClick={() => handleRestore(file.id)}
-                      className="p-1.5 text-slate-500 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
-                    >
-                      <RefreshCcw className="w-4 h-4" />
-                    </button>
-                  )}
+                <div className="relative inline-block text-left">
                   <button 
-                    onClick={() => handleDelete(file.id)}
-                    className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                    onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === file.id ? null : file.id); }}
+                    className="p-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 transition-colors"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <MoreVertical className="w-5 h-5" />
                   </button>
+                  
+                  {activeMenuId === file.id && (
+                    <div 
+                      className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1 z-50 overflow-hidden"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {!isTrash && (
+                        <>
+                          <a href={`${endpoint}/${file.id}`} target="_blank" download className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors">
+                            <Download className="w-4 h-4" /> Download
+                          </a>
+                          <button onClick={() => { handleShare(file.id); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors text-left">
+                            <Link className="w-4 h-4" /> Get Share Link
+                          </button>
+                          <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
+                          <button onClick={() => { handleDelete(file.id); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left">
+                            <Trash2 className="w-4 h-4" /> Move to Trash
+                          </button>
+                        </>
+                      )}
+                      {isTrash && (
+                        <button onClick={() => { handleRestore(file.id); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors text-left">
+                          <RefreshCcw className="w-4 h-4" /> Restore File
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </td>
             </tr>
-          ))}
+          )})}
         </tbody>
       </table>
     </div>

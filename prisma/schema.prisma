@@ -15,5 +15,29 @@ model File {
   telegramMessageId Int      @unique
   isDeleted         Boolean  @default(false)
   deletedAt         DateTime?
+  folderId          String?
+  folder            Folder?  @relation(fields: [folderId], references: [id])
+  sharedLinks       SharedLink[]
   createdAt         DateTime @default(now())
+}
+
+model Folder {
+  id        String   @id @default(uuid())
+  name      String
+  parentId  String?
+  parent    Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id])
+  children  Folder[] @relation("FolderHierarchy")
+  files     File[]
+  createdAt   DateTime     @default(now())
+  sharedLinks SharedLink[]
+}
+
+model SharedLink {
+  id        String    @id @default(uuid())
+  fileId    String?
+  file      File?     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  folderId  String?
+  folder    Folder?   @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
 }

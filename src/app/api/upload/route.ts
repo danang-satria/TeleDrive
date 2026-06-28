@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
     const totalChunks = parseInt(formData.get("totalChunks") as string);
     const uploadId = formData.get("uploadId") as string;
     const mimeType = formData.get("mimeType") as string;
+    const folderId = formData.get("folderId") as string;
 
     if (!file || !originalName || isNaN(chunkIndex) || isNaN(totalChunks) || !uploadId) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -42,6 +43,7 @@ export async function POST(req: NextRequest) {
           size: stat.size,
           mimeType: mimeType || file.type || "application/octet-stream",
           telegramMessageId: messageId,
+          folderId: folderId && folderId !== 'root' ? folderId : null
         }
       });
 

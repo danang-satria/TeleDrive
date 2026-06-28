@@ -1,24 +1,54 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { HardDrive, ShieldCheck, Database, RefreshCcw, Moon, Sun, Monitor } from "lucide-react";
 import { useTheme } from "next-themes";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [syncProgress, setSyncProgress] = useState<{ count: number, totalBatches: number } | null>(null);
   const [syncResult, setSyncResult] = useState<string | null>(null);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const handleSync = async () => {
+    if (!confirm("This will scan your entire Telegram channel history and add files to your drive. Proceed?")) return;
+    
     setIsSyncing(true);
     setSyncResult(null);
+    setSyncProgress({ count: 0, totalBatches: 0 });
+    
     try {
-      const res = await fetch("/api/sync", { method: "POST" });
-      const data = await res.json();
-      if (data.success) {
-        setSyncResult(`Successfully synced ${data.count} new files from Telegram.`);
-      } else {
-        setSyncResult("Failed to sync.");
+      let offsetId = 0;
+      let totalSynced = 0;
+      let batches = 0;
+      let done = false;
+
+      while (!done) {
+        const res = await fetch("/api/sync", { 
+          method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ offsetId })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          totalSynced += data.count;
+          batches++;
+          setSyncProgress({ count: totalSynced, totalBatches: batches });
+          
+          done = data.done;
+          offsetId = data.nextOffsetId;
+        } else {
+          done = true;
+          setSyncResult("Sync stopped due to an error.");
+        }
       }
+      
+      setSyncResult(`Successfully synced a total of ${totalSynced} new files across ${batches} batches.`);
     } catch (e) {
       setSyncResult("An error occurred during sync.");
     }
@@ -51,19 +81,19 @@ export default function SettingsPage() {
               <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
                 <button 
                   onClick={() => setTheme("light")}
-                  className={`p-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors ${theme === 'light' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                  className={`p-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors ${mounted && theme === 'light' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                 >
                   <Sun className="w-4 h-4" /> Light
                 </button>
                 <button 
                   onClick={() => setTheme("dark")}
-                  className={`p-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors ${theme === 'dark' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                  className={`p-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors ${mounted && theme === 'dark' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                 >
                   <Moon className="w-4 h-4" /> Dark
                 </button>
                 <button 
                   onClick={() => setTheme("system")}
-                  className={`p-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors ${theme === 'system' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                  className={`p-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors ${mounted && theme === 'system' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                 >
                   <Monitor className="w-4 h-4" /> System
                 </button>
@@ -86,7 +116,7 @@ export default function SettingsPage() {
           <div className="p-6 space-y-4">
             <p className="text-sm text-slate-600 dark:text-slate-400">
               If you have uploaded files directly to your Telegram Private Channel, you can sync them to TeleDrive. 
-              This will pull the latest 100 media messages and add them to your drive.
+              This will scan your entire channel history in batches of 100 messages.
             </p>
             
             <button 
@@ -95,8 +125,14 @@ export default function SettingsPage() {
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium text-sm disabled:opacity-50"
             >
               <RefreshCcw className={`w-4 h-4 ${isSyncing ? "animate-spin" : ""}`} />
-              {isSyncing ? "Syncing..." : "Sync from Telegram"}
+              {isSyncing ? "Syncing..." : "Sync Entire History"}
             </button>
+
+            {isSyncing && syncProgress && (
+              <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mt-2">
+                Scanning... Found {syncProgress.count} files so far (Batch #{syncProgress.totalBatches})
+              </p>
+            )}
 
             {syncResult && (
               <p className="text-sm font-medium text-green-600 dark:text-green-400 mt-2">

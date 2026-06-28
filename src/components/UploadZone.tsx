@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 
 const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB for reliability
 
-export default function UploadZone({ onUploadComplete }: { onUploadComplete: () => void }) {
+export default function UploadZone({ onUploadComplete, folderId = "root" }: { onUploadComplete: () => void, folderId?: string }) {
   const [uploads, setUploads] = useState<{ id: string; name: string; progress: number; error?: string }[]>([]);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
@@ -25,6 +25,7 @@ export default function UploadZone({ onUploadComplete }: { onUploadComplete: () 
           formData.append("chunkIndex", i.toString());
           formData.append("totalChunks", totalChunks.toString());
           formData.append("uploadId", uploadId);
+          formData.append("folderId", folderId);
 
           const res = await fetch("/api/upload", {
             method: "POST",
