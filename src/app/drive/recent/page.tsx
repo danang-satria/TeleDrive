@@ -27,8 +27,8 @@ export default function RecentPage() {
         </div>
       </div>
       
-      <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="pb-4 flex justify-between items-center">
           <h2 className="font-semibold text-slate-700 dark:text-slate-200">Files</h2>
           <div className="flex items-center gap-2">
             <button 
@@ -45,7 +45,7 @@ export default function RecentPage() {
             </button>
           </div>
         </div>
-        <div className="p-4 flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto">
           <FileList files={files} onDelete={fetchFiles} isGridView={isGridView} endpoint="/api/files" />
         </div>
       </div>

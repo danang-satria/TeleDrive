@@ -118,7 +118,7 @@ export default function SettingsPage() {
             </h1>
           </div>
 
-          <div className="bg-slate-50 dark:bg-[#28292c] p-6 rounded-2xl border border-slate-200 dark:border-transparent shadow-sm">
+          <div className="bg-white/40 dark:bg-slate-900/40 p-6 rounded-3xl">
             <h2 className="text-lg font-semibold mb-2">Sesi Telegram (String Session)</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
               Masukkan Telegram String Session yang valid. Sesi ini akan disimpan secara lokal di SQLite dan digunakan sebagai prioritas utama melebihi nilai di .env.
@@ -185,7 +185,7 @@ export default function SettingsPage() {
           </div>
 
           {!sessionValid && !checkingSession && (
-            <div className="mt-6 bg-blue-50 dark:bg-[#1a2b3c] p-6 rounded-2xl border border-blue-200 dark:border-blue-900/50 shadow-sm">
+            <div className="mt-6 bg-blue-500/10 dark:bg-blue-900/20 p-6 rounded-3xl">
               <h2 className="text-lg font-semibold mb-2 flex items-center gap-2 text-blue-900 dark:text-blue-100">
                 <KeyRound className="w-5 h-5" /> Buat Sesi Baru Otomatis
               </h2>
