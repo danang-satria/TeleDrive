@@ -3,20 +3,53 @@ import { StringSession } from "telegram/sessions";
 import { CustomFile } from "telegram/client/uploads";
 import fs from "fs";
 import path from "path";
+import { prisma } from "./db";
 
 const apiId = parseInt(process.env.TELEGRAM_API_ID || "0");
 const apiHash = process.env.TELEGRAM_API_HASH || "";
-const sessionString = process.env.TELEGRAM_SESSION || "";
-const stringSession = new StringSession(sessionString);
 
 let client: TelegramClient | null = null;
 
+export class TelegramSessionExpired extends Error {
+  constructor(message = "Telegram session has expired or is invalid.") {
+    super(message);
+    this.name = "TelegramSessionExpired";
+  }
+}
+
+export function resetTelegramClient() {
+  if (client) {
+    try { client.disconnect(); } catch (e) {}
+  }
+  client = null;
+}
+
 export async function getTelegramClient() {
   if (!client) {
+    const config = await prisma.appConfig.findUnique({ where: { key: "TELEGRAM_SESSION" } });
+    const sessionString = config?.value || process.env.TELEGRAM_SESSION || "";
+    
+    if (!sessionString) {
+      throw new TelegramSessionExpired("No Telegram session string provided.");
+    }
+
+    let stringSession;
+    try {
+      stringSession = new StringSession(sessionString);
+    } catch (e) {
+      throw new TelegramSessionExpired("Invalid session string format.");
+    }
+    
     client = new TelegramClient(stringSession, apiId, apiHash, {
-      connectionRetries: 5,
+      connectionRetries: 1,
     });
-    await client.connect();
+
+    try {
+      await client.connect();
+    } catch (error) {
+      client = null;
+      throw new TelegramSessionExpired();
+    }
   }
   return client;
 }

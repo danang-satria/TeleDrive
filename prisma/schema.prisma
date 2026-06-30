@@ -41,3 +41,8 @@ model SharedLink {
   expiresAt DateTime?
   createdAt DateTime  @default(now())
 }
+
+model AppConfig {
+  key   String @id
+  value String
+}

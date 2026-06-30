@@ -11,6 +11,7 @@ function DashboardContent() {
   const [folders, setFolders] = useState([]);
   const [filterType, setFilterType] = useState("");
   const [isGridView, setIsGridView] = useState(true);
+  const [sessionError, setSessionError] = useState(false);
   
   const searchParams = useSearchParams();
   const folderId = searchParams.get("folder") || "root";
@@ -34,6 +35,12 @@ function DashboardContent() {
 
   useEffect(() => {
     fetchContent(search, filterType);
+    
+    fetch("/api/settings/check-session")
+      .then(res => {
+        if (res.status === 401) setSessionError(true);
+      })
+      .catch(() => {});
 
     const handleOpenNewFolder = () => handleCreateFolder();
     document.addEventListener('open-new-folder', handleOpenNewFolder);
@@ -71,6 +78,12 @@ function DashboardContent() {
           )}
         </div>
       </div>
+
+      {sessionError && (
+        <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 p-4 rounded-xl shadow-sm border border-red-200 dark:border-red-800/50 flex items-start gap-3">
+          <span>⚠️ <strong>Sesi Telegram telah berakhir.</strong> File tidak dapat diakses. Silakan perbarui sesi di Pengaturan.</span>
+        </div>
+      )}
 
       <div className="flex gap-2 pb-2 overflow-x-auto no-scrollbar">
         {['All', 'Image', 'Video', 'Document'].map((type) => {
