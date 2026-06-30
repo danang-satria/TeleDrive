@@ -1,11 +1,14 @@
 "use client";
-import { HardDrive, Clock, Trash, Settings, Plus, FolderPlus, UploadCloud, Cloud } from "lucide-react";
+import { Cloud, FolderPlus, Clock, Trash2, Settings, Plus, UploadCloud, Database } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useDriveStore } from "@/lib/store";
 import { useState, useEffect } from "react";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { openCreateFolderModal } = useDriveStore();
   const [analytics, setAnalytics] = useState({ totalSize: 0, totalFiles: 0 });
   const [showNewMenu, setShowNewMenu] = useState(false);
 
@@ -16,7 +19,7 @@ export default function Sidebar() {
         if (!data.error) setAnalytics(data);
       })
       .catch(console.error);
-  }, [pathname]); // Refresh when navigating
+  }, [pathname]);
 
   useEffect(() => {
     const handleClickOutside = () => setShowNewMenu(false);
@@ -55,7 +58,13 @@ export default function Sidebar() {
 
         {showNewMenu && (
           <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 py-2 z-50">
-            <button onClick={() => { setShowNewMenu(false); document.dispatchEvent(new CustomEvent('open-new-folder')); }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+            <button 
+              onClick={() => {
+                if (pathname !== "/") router.push("/");
+                setTimeout(() => openCreateFolderModal(), 100);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
               <FolderPlus className="w-4 h-4 text-slate-500" /> New Folder
             </button>
             <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>

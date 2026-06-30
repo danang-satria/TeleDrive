@@ -2,13 +2,15 @@
 import { useState, useEffect, Suspense } from "react";
 import { FolderPlus, ChevronRight, ChevronDown, Home as HomeIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import useSWR from "swr";
+import { useDriveStore } from "@/lib/store";
 import UploadZone from "@/components/UploadZone";
 import FileList from "@/components/FileList";
 import FolderList from "@/components/FolderList";
 
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
 function DashboardContent() {
-  const [files, setFiles] = useState([]);
-  const [folders, setFolders] = useState([]);
   const [filterType, setFilterType] = useState("");
   const [isGridView, setIsGridView] = useState(true);
   const [sessionError, setSessionError] = useState(false);
@@ -18,45 +20,36 @@ function DashboardContent() {
   const search = searchParams.get("q") || "";
   const router = useRouter();
 
-  const fetchContent = async (q = "", type = "") => {
-    let fileUrl = `/api/files?q=${encodeURIComponent(q)}&folderId=${folderId}`;
-    if (type) fileUrl += `&type=${type}`;
-    const res = await fetch(fileUrl);
-    setFiles(await res.json());
+  const { refreshTrigger } = useDriveStore();
 
-    if (!q && !type) {
-      const folderUrl = `/api/folders${folderId !== 'root' ? `?parentId=${folderId}` : ''}`;
-      const resFolders = await fetch(folderUrl);
-      setFolders(await resFolders.json());
-    } else {
-      setFolders([]);
-    }
-  };
+  let fileUrl = `/api/files?q=${encodeURIComponent(search)}&folderId=${folderId}`;
+  if (filterType) fileUrl += `&type=${filterType}`;
+  
+  const folderUrl = (!search && !filterType) ? `/api/folders${folderId !== 'root' ? `?parentId=${folderId}` : ''}` : null;
+  const breadcrumbsUrl = (!search && !filterType && folderId !== 'root') ? `/api/folders/breadcrumbs?folderId=${folderId}` : null;
+
+  const { data: files, mutate: mutateFiles } = useSWR(fileUrl, fetcher);
+  const { data: folders, mutate: mutateFolders } = useSWR(folderUrl, fetcher);
+  const { data: breadcrumbs } = useSWR(breadcrumbsUrl, fetcher);
 
   useEffect(() => {
-    fetchContent(search, filterType);
-    
+    if (refreshTrigger > 0) {
+      mutateFiles();
+      mutateFolders();
+    }
+  }, [refreshTrigger, mutateFiles, mutateFolders]);
+
+  useEffect(() => {
     fetch("/api/settings/check-session")
       .then(res => {
         if (res.status === 401) setSessionError(true);
       })
       .catch(() => {});
+  }, []);
 
-    const handleOpenNewFolder = () => handleCreateFolder();
-    document.addEventListener('open-new-folder', handleOpenNewFolder);
-    return () => document.removeEventListener('open-new-folder', handleOpenNewFolder);
-  }, [search, filterType, folderId]);
-
-  const handleCreateFolder = async () => {
-    const name = prompt("Enter folder name:");
-    if (!name) return;
-    await fetch("/api/folders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, parentId: folderId === "root" ? null : folderId })
-    });
-    fetchContent(search, filterType);
-  };
+  const safeFiles = files || [];
+  const safeFolders = folders || [];
+  const safeBreadcrumbs = breadcrumbs || [];
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-full mx-auto w-full space-y-6 flex-1 flex flex-col h-full">
@@ -68,12 +61,22 @@ function DashboardContent() {
               My Drive <ChevronDown className="w-5 h-5 text-slate-500" />
             </h1>
           ) : (
-            <div className="flex items-center gap-2 text-2xl text-slate-800 dark:text-slate-100">
+            <div className="flex items-center gap-2 text-2xl text-slate-800 dark:text-slate-100 flex-wrap">
               <button onClick={() => router.push("/")} className="hover:bg-slate-100 dark:hover:bg-slate-800/50 p-2 rounded-xl transition-colors -ml-2 flex items-center gap-2">
                 My Drive
               </button>
-              <ChevronRight className="w-5 h-5 text-slate-500" />
-              <span className="p-2">Current Folder</span>
+              
+              {safeBreadcrumbs.map((crumb: any, idx: number) => (
+                <div key={crumb.id} className="flex items-center gap-2">
+                  <ChevronRight className="w-5 h-5 text-slate-500" />
+                  <button 
+                    onClick={() => router.push(`/?folder=${crumb.id}`)}
+                    className={`p-2 rounded-xl transition-colors ${idx === safeBreadcrumbs.length - 1 ? 'font-semibold' : 'hover:bg-slate-100 dark:hover:bg-slate-800/50'}`}
+                  >
+                    {crumb.name}
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -106,7 +109,7 @@ function DashboardContent() {
       </div>
       
       {/* Hidden Global Upload Hook */}
-      <UploadZone folderId={folderId} onUploadComplete={() => fetchContent(search, filterType)} />
+      <UploadZone folderId={folderId} onUploadComplete={() => mutateFiles()} />
       
       <div className="flex-1 flex flex-col min-h-0">
         <div className="pb-4 flex justify-end items-center">
@@ -126,8 +129,9 @@ function DashboardContent() {
           </div>
         </div>
         <div className="flex-1 overflow-y-auto pr-2">
-          <FolderList folders={folders} onRefresh={() => fetchContent(search, filterType)} />
-          <FileList files={files} onDelete={() => fetchContent(search, filterType)} isGridView={isGridView} endpoint="/api/files" />
+          {!files && !folders && <div className="p-8 text-center text-slate-500">Memuat...</div>}
+          <FolderList folders={safeFolders} onRefresh={() => mutateFolders()} />
+          <FileList files={safeFiles} onDelete={() => mutateFiles()} isGridView={isGridView} endpoint="/api/files" />
         </div>
       </div>
     </div>
