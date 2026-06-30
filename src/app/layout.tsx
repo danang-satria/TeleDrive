@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ClientLayout from "@/components/ClientLayout";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,6 +24,7 @@ export default function RootLayout({
           <div className="flex flex-col h-screen w-screen bg-slate-100 dark:bg-slate-950 transition-colors duration-200">
             <ClientLayout>{children}</ClientLayout>
           </div>
+          <Toaster position="bottom-right" richColors />
         </ThemeProvider>
       </body>
     </html>

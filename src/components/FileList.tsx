@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { FileIcon, Download, Trash2, FileText, Image as ImageIcon, Video, FileArchive, RefreshCcw, Share2, Link, MoreVertical } from "lucide-react";
+import { useDriveStore } from "@/lib/store";
 
 export type FileRecord = {
   id: string;
@@ -44,6 +45,7 @@ export default function FileList({
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [menuPos, setMenuPos] = useState<{ x: number, y: number } | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
+  const { openPreview } = useDriveStore();
 
   useEffect(() => {
     // Reset selection when switching folders or viewing different file sets
@@ -163,6 +165,7 @@ export default function FileList({
             draggable
             onDragStart={(e) => handleDragStart(e, file.id)}
             onClick={(e) => toggleSelect(file.id, e)}
+            onDoubleClick={() => openPreview({ id: file.id, name: file.name, mimeType: file.mimeType })}
             onContextMenu={(e) => {
               e.preventDefault();
               setActiveMenuId(file.id);
@@ -260,6 +263,7 @@ export default function FileList({
               key={file.id} 
               draggable
               onClick={(e) => toggleSelect(file.id, e)}
+              onDoubleClick={() => openPreview({ id: file.id, name: file.name, mimeType: file.mimeType })}
               onContextMenu={(e) => {
                 e.preventDefault();
                 setActiveMenuId(file.id);

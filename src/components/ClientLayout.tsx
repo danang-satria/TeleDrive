@@ -3,6 +3,7 @@ import Sidebar from "@/components/Sidebar";
 import GlobalUploadOverlay from "@/components/GlobalUploadOverlay";
 import TopBar from "@/components/TopBar";
 import CreateFolderModal from "@/components/CreateFolderModal";
+import FilePreviewModal from "@/components/FilePreviewModal";
 import { usePathname } from "next/navigation";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
@@ -17,6 +18,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     <>
       <GlobalUploadOverlay />
       <CreateFolderModal />
+      <FilePreviewModal />
       <TopBar />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />

@@ -4,7 +4,6 @@ import { FolderPlus, ChevronRight, ChevronDown, Home as HomeIcon } from "lucide-
 import { useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { useDriveStore } from "@/lib/store";
-import UploadZone from "@/components/UploadZone";
 import FileList from "@/components/FileList";
 import FolderList from "@/components/FolderList";
 
@@ -107,9 +106,6 @@ function DashboardContent() {
           );
         })}
       </div>
-      
-      {/* Hidden Global Upload Hook */}
-      <UploadZone folderId={folderId} onUploadComplete={() => mutateFiles()} />
       
       <div className="flex-1 flex flex-col min-h-0">
         <div className="pb-4 flex justify-end items-center">
