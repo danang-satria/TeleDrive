@@ -1,5 +1,5 @@
 "use client";
-import { Cloud, FolderPlus, Clock, Trash2, Settings, Plus, UploadCloud, Database } from "lucide-react";
+import { Cloud, FolderPlus, Clock, Trash, Trash2, Settings, Plus, UploadCloud, Database, HardDrive } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useDriveStore } from "@/lib/store";
