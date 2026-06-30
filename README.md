@@ -1,83 +1,104 @@
-# TeleDrive ☁️
+<div align="center">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="TeleDrive Logo" width="120" />
+  <br/>
+  <h1>TeleDrive ☁️</h1>
+  <p><strong>Your Personal Unlimited Cloud Storage, Powered by Telegram.</strong></p>
 
-TeleDrive is a personal cloud storage web application built to mimic the experience of Google Drive, but utilizing **Telegram** as the underlying storage backend. This project allows you to bypass standard Telegram bot limitations and upload files up to **2.0 GB** per file directly to a Telegram Private Channel.
+  <p>
+    <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js" alt="Next.js" />
+    <img src="https://img.shields.io/badge/Tailwind-v4-38B2AC?style=for-the-badge&logo=tailwind-css" alt="Tailwind CSS" />
+    <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite" alt="SQLite" />
+  </p>
+</div>
 
-## Features ✨
+<br/>
 
-- **Unlimited Storage**: Leverages Telegram's free unlimited cloud storage.
-- **Large File Uploads**: Upload files up to 2.0 GB, completely bypassing the standard 50 MB Telegram Bot API limit by using MTProto via GramJS.
-- **Beautiful UI**: Built with Tailwind CSS v4 featuring a clean, responsive, and modern dashboard with Dark Mode and Light Mode support.
-- **Image Previews**: Native inline preview for uploaded images.
-- **Trash / Soft Delete**: Deleted files are moved to the Trash bin to prevent accidental data loss.
-- **Recent Files**: Quickly find files you've uploaded or interacted with in the last 7 days.
-- **Search functionality**: Instantly find files by name.
-- **Telegram Sync**: Automatically pull and sync files that were manually uploaded directly inside your Telegram Channel.
+TeleDrive is a modern, personal cloud storage web application built to mimic the beautiful experience of Google Drive, but utilizing **Telegram** as the underlying unlimited storage backend. By leveraging the Telegram MTProto API via GramJS, TeleDrive bypasses standard Bot limitations, allowing you to upload and manage files up to **2.0 GB** per file effortlessly!
 
-## Tech Stack 🛠️
+## ✨ Key Features
 
-- **Framework**: Next.js 16 (App Router / Turbopack)
-- **Styling**: Tailwind CSS v4
-- **Database**: SQLite (via Prisma ORM v6)
-- **Telegram Integration**: GramJS (MTProto)
-- **Icons**: Lucide React
-- **Theming**: Next-Themes
+*   ♾️ **Unlimited Storage**: Say goodbye to "Storage Full" notifications. Utilize Telegram's free, unlimited cloud infrastructure.
+*   🚀 **Large File Uploads**: Upload massive files up to 2.0 GB, completely bypassing the standard 50 MB Telegram Bot API limit.
+*   🔒 **Secure Admin Authentication**: Fully protected dashboard powered by **NextAuth**. Your files are safe; only authorized users can access the drive.
+*   🌐 **In-App Session Generator**: No more struggling with terminal scripts! Generate and manage your Telegram session directly from the beautiful web UI.
+*   🎨 **Sleek & Modern UI**: A premium user interface heavily inspired by Google Drive, complete with Grid/List views and responsive design.
+*   🗑️ **Smart Trash System**: Deleted files are safely moved to the Trash bin (with automatic 30-day cleanup) to prevent accidental data loss.
+*   🖼️ **Image Previews**: Native inline preview for your uploaded images.
+*   🔄 **Background Sync**: Automatically pull and sync files that were manually uploaded directly inside your Telegram Channel.
+*   🔍 **Instant Search**: Find your files in milliseconds.
 
-## Prerequisites 📝
+## 🛠️ Technology Stack
+
+*   **Core**: Next.js 15 (App Router), React 19, TypeScript
+*   **Styling**: Tailwind CSS v4, Lucide React Icons
+*   **Database**: Prisma ORM with SQLite
+*   **Authentication**: NextAuth.js (Credentials Provider)
+*   **Telegram Client**: GramJS (MTProto)
+
+## 📋 Prerequisites
 
 Before you begin, you need to obtain your Telegram API credentials:
-1. Log in to your Telegram account at [my.telegram.org](https://my.telegram.org)
-2. Go to "API development tools" and create a new application to get your `API_ID` and `API_HASH`.
-3. Create a **Private Channel** in Telegram to serve as your storage drive. Note down the Channel ID (usually starts with `-100`).
 
-## Installation & Setup 🚀
+1.  Log in to your Telegram account at [my.telegram.org](https://my.telegram.org)
+2.  Go to **API development tools** and create a new application to get your `API_ID` and `API_HASH`.
+3.  Create a **Private Channel** in Telegram to serve as your storage drive. Note down the Channel ID (usually starts with `-100`).
 
-1. **Clone the repository** (if applicable) and navigate to the project directory:
-   ```bash
-   cd TeleDrive
-   ```
+## 🚀 Installation & Setup
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+**1. Clone the repository**
+```bash
+git clone https://github.com/yourusername/teledrive.git
+cd teledrive
+```
 
-3. **Set up Environment Variables**:
-   Create a `.env` file in the root directory and add the following:
-   ```env
-   DATABASE_URL="file:./dev.db"
+**2. Install dependencies**
+```bash
+npm install
+```
 
-   # Telegram API Credentials
-   TELEGRAM_API_ID="YOUR_API_ID"
-   TELEGRAM_API_HASH="YOUR_API_HASH"
-   TELEGRAM_CHANNEL_ID="-100XXXXXXXXXX" # Must start with -100 for private channels
+**3. Set up Environment Variables**
+Create a `.env` file in the root directory and configure your credentials:
 
-   # Session string generated from your account
-   TELEGRAM_SESSION="YOUR_GENERATED_SESSION_STRING"
-   ```
+```env
+# Database
+DATABASE_URL="file:./dev.db"
 
-4. **Generate a Telegram Session String**:
-   Since TeleDrive uses MTProto to upload large files, it acts as a "User Client" instead of a "Bot". You must generate a session string to authenticate.
-   Run the session generator script:
-   ```bash
-   npx ts-node scripts/generate-session.ts
-   ```
-   Follow the prompts to enter your phone number and the OTP code sent to your Telegram app. Once successful, it will output a long session string. Copy it and paste it into `TELEGRAM_SESSION` in your `.env` file.
+# Admin Authentication (Change these!)
+ADMIN_EMAIL="admin@teledrive.com"
+ADMIN_PASSWORD="password123"
+NEXTAUTH_SECRET="your-super-secret-key-32-chars-long"
 
-5. **Initialize Database**:
-   Apply the Prisma schema to the SQLite database:
-   ```bash
-   npx prisma db push
-   npx prisma generate
-   ```
+# Telegram API Credentials
+TELEGRAM_API_ID="YOUR_API_ID"
+TELEGRAM_API_HASH="YOUR_API_HASH"
+TELEGRAM_CHANNEL_ID="-100XXXXXXXXXX" # Must start with -100
+```
 
-6. **Start the Development Server**:
-   ```bash
-   npm run dev
-   ```
+**4. Initialize the Database**
+Apply the Prisma schema to create your local SQLite database:
+```bash
+npx prisma db push
+```
 
-7. **Open the App**:
-   Visit [http://localhost:3000](http://localhost:3000) in your browser.
+**5. Start the Application**
+```bash
+npm run dev
+```
 
-## Security Warning ⚠️
+**6. Log In and Connect Telegram**
+*   Visit `http://localhost:3000` in your browser.
+*   Log in using the `ADMIN_EMAIL` and `ADMIN_PASSWORD` you set in the `.env` file.
+*   Once logged in, go to the **Settings** page via the top-right profile menu.
+*   Use the **"Buat Sesi Baru Otomatis"** (Automatic Session Generator) to log in to your Telegram account directly from the website!
 
-TeleDrive currently has **no login or authentication system**. It is designed to run purely on your **local machine** for personal use. Do not deploy this application to a public server without first implementing a secure authentication layer (like NextAuth or Firebase Auth), otherwise anyone can access and delete your personal Telegram files.
+## 🔐 Privacy & Security
+
+TeleDrive is a **Self-Hosted** application.
+*   **No Third-Party Servers**: Your data is not routed through or stored on any third-party servers other than Telegram's official infrastructure.
+*   **Local Storage**: Your Telegram Session string and file metadata are stored securely in your local SQLite database.
+*   **Private Channels**: Files are uploaded to your specified private Telegram channel, meaning nobody else can access them unless they have access to your Telegram account.
+
+## 📝 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
