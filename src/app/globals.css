@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@plugin "next-themes";
 
 @theme {
   --animate-fade-in-up: fade-in-up 0.8s ease-out forwards;
