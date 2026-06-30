@@ -31,6 +31,7 @@ TeleDrive is a modern, personal cloud storage web application built to mimic the
 ## 🛠️ Technology Stack
 
 *   **Core**: Next.js 15 (App Router), React 19, TypeScript
+*   **State & Data Fetching**: Zustand (State Management), SWR (Data Fetching)
 *   **Styling**: Tailwind CSS v4, Lucide React Icons
 *   **Database**: Prisma ORM with SQLite
 *   **Authentication**: NextAuth.js (Credentials Provider)
