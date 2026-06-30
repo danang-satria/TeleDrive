@@ -27,10 +27,10 @@ export function resetTelegramClient() {
 export async function getTelegramClient() {
   if (!client) {
     const config = await prisma.appConfig.findUnique({ where: { key: "TELEGRAM_SESSION" } });
-    const sessionString = config?.value || process.env.TELEGRAM_SESSION || "";
-    
+    const sessionString = config?.value;
+
     if (!sessionString) {
-      throw new TelegramSessionExpired("No Telegram session string provided.");
+      throw new TelegramSessionExpired("No Telegram session string provided in database.");
     }
 
     let stringSession;
