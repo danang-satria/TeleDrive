@@ -45,7 +45,7 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="w-64 h-full bg-slate-100 dark:bg-slate-950 p-4 flex flex-col transition-colors duration-200">
+    <div className="w-64 h-full bg-transparent p-4 flex flex-col transition-colors duration-200">
       
       <div className="relative mb-6">
         <button 

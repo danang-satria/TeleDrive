@@ -39,7 +39,7 @@ export default function TopBar() {
   }, [search, router]);
 
   return (
-    <header className="h-16 flex items-center justify-between px-4 sm:px-6 bg-slate-100 dark:bg-slate-950 shrink-0">
+    <header className="h-16 flex items-center justify-between px-4 sm:px-6 bg-transparent shrink-0">
       <div className="flex items-center gap-2 w-64 shrink-0">
         <Cloud className="w-8 h-8 text-blue-600 dark:text-blue-500" />
         <span className="text-xl font-semibold text-slate-800 dark:text-slate-100">TeleDrive</span>
