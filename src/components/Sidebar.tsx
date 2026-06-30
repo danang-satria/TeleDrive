@@ -60,7 +60,7 @@ export default function Sidebar() {
           <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 py-2 z-50">
             <button 
               onClick={() => {
-                if (pathname !== "/") router.push("/");
+                if (pathname !== "/drive") router.push("/drive");
                 setTimeout(() => openCreateFolderModal(), 100);
               }}
               className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
@@ -76,15 +76,15 @@ export default function Sidebar() {
       </div>
       
       <nav className="flex-1 space-y-1">
-        <Link href="/" className={getLinkClass("/")}>
+        <Link href="/drive" className={getLinkClass("/drive")}>
           <HardDrive className="w-5 h-5" />
           My Drive
         </Link>
-        <Link href="/recent" className={getLinkClass("/recent")}>
+        <Link href="/drive/recent" className={getLinkClass("/drive/recent")}>
           <Clock className="w-5 h-5" />
           Recent
         </Link>
-        <Link href="/trash" className={getLinkClass("/trash")}>
+        <Link href="/drive/trash" className={getLinkClass("/drive/trash")}>
           <Trash className="w-5 h-5" />
           Trash
         </Link>
@@ -105,7 +105,7 @@ export default function Sidebar() {
           <p className="text-xs text-slate-500 mt-1">Unlimited Telegram Drive</p>
         </div>
 
-        <Link href="/settings" className={getLinkClass("/settings")}>
+        <Link href="/drive/settings" className={getLinkClass("/drive/settings")}>
           <Settings className="w-5 h-5" />
           Settings
         </Link>
