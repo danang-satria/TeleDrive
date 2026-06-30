@@ -22,7 +22,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       <TopBar />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto bg-white dark:bg-[#1a1c1e] m-4 mt-0 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-200 relative">
+        <main className="flex-1 overflow-y-auto bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl m-4 mt-0 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col transition-colors duration-200 relative">
           {children}
         </main>
       </div>
