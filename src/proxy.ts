@@ -13,11 +13,13 @@ export async function proxy(req: NextRequest) {
   
   // Public paths
   if (
+    pathname === '/' ||
     pathname.startsWith('/api/auth') || 
     pathname.startsWith('/login') ||
     pathname.startsWith('/share') ||
     pathname.startsWith('/api/share') ||
-    pathname.startsWith('/_next')
+    pathname.startsWith('/_next') ||
+    pathname.includes('favicon')
   ) {
     return NextResponse.next()
   }
