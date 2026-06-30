@@ -20,12 +20,13 @@ TeleDrive is a modern, personal cloud storage web application built to mimic the
 
 *   ♾️ **Unlimited Storage**: Say goodbye to "Storage Full" notifications. Utilize Telegram's free, unlimited cloud infrastructure.
 *   🚀 **Large File Uploads**: Upload massive files up to 2.0 GB, completely bypassing the standard 50 MB Telegram Bot API limit.
+*   📁 **Global Drag & Drop**: Seamlessly drag and drop files anywhere on the screen. Powered by `tus-js-client` for resumable, chunked background uploads.
 *   🔒 **Secure Admin Authentication**: Fully protected dashboard powered by **NextAuth**. Your files are safe; only authorized users can access the drive.
 *   🌐 **In-App Session Generator**: No more struggling with terminal scripts! Generate and manage your Telegram session directly from the beautiful web UI.
-*   🎨 **Sleek & Modern UI**: A premium user interface heavily inspired by Google Drive, complete with Grid/List views and responsive design.
+*   🎨 **Premium Glassmorphism UI**: A stunning public Landing Page and a premium dashboard heavily inspired by modern glassmorphism design trends.
 *   🗑️ **Smart Trash System**: Deleted files are safely moved to the Trash bin (with automatic 30-day cleanup) to prevent accidental data loss.
-*   🖼️ **Image Previews**: Native inline preview for your uploaded images.
-*   🔄 **Background Sync**: Automatically pull and sync files that were manually uploaded directly inside your Telegram Channel.
+*   🖼️ **File Previews**: Native inline preview for your uploaded images, videos, and documents through a beautiful modal dialog.
+*   🔄 **Real-Time UI**: Instant UI updates across components powered by **SWR** and **Zustand** state management.
 *   🔍 **Instant Search**: Find your files in milliseconds.
 
 ## 🛠️ Technology Stack
