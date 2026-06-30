@@ -15,6 +15,7 @@ export default function FilePreviewModal() {
   
   const canPreview = isImage || isVideo || isAudio || isPdf;
   const fileUrl = `/api/files/${previewFile.id}?view=true`;
+  const streamUrl = `/api/files/${previewFile.id}/stream`;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md animate-in fade-in duration-200">
@@ -67,7 +68,7 @@ export default function FilePreviewModal() {
 
           {isVideo && (
             <video 
-              src={fileUrl} 
+              src={streamUrl} 
               controls 
               autoPlay
               className="max-w-full max-h-full drop-shadow-2xl rounded-xl outline-none bg-black"
@@ -80,7 +81,7 @@ export default function FilePreviewModal() {
                 <div className="w-16 h-16 bg-blue-500 rounded-full animate-pulse" />
               </div>
               <audio 
-                src={fileUrl} 
+                src={streamUrl} 
                 controls 
                 autoPlay
                 className="w-full"

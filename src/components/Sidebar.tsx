@@ -1,5 +1,5 @@
 "use client";
-import { Cloud, FolderPlus, Clock, Trash, Trash2, Settings, Plus, UploadCloud, Database, HardDrive } from "lucide-react";
+import { Cloud, FolderPlus, Clock, Trash, Trash2, Settings, Plus, UploadCloud, Database, HardDrive, Star } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useDriveStore } from "@/lib/store";
@@ -44,6 +44,13 @@ export default function Sidebar() {
     }`;
   };
 
+  const navItems = [
+    { name: "My Drive", icon: HardDrive, path: "/drive" },
+    { name: "Starred", icon: Star, path: "/drive/starred" },
+    { name: "Recent", icon: Clock, path: "/drive/recent" },
+    { name: "Trash", icon: Trash2, path: "/drive/trash" },
+  ];
+
   return (
     <div className="w-64 h-full bg-transparent p-4 flex flex-col transition-colors duration-200">
       
@@ -76,33 +83,31 @@ export default function Sidebar() {
       </div>
       
       <nav className="flex-1 space-y-1">
-        <Link href="/drive" className={getLinkClass("/drive")}>
-          <HardDrive className="w-5 h-5" />
-          My Drive
-        </Link>
-        <Link href="/drive/recent" className={getLinkClass("/drive/recent")}>
-          <Clock className="w-5 h-5" />
-          Recent
-        </Link>
-        <Link href="/drive/trash" className={getLinkClass("/drive/trash")}>
-          <Trash className="w-5 h-5" />
-          Trash
-        </Link>
+        {navItems.map((item) => (
+          <Link key={item.path} href={item.path} className={getLinkClass(item.path)}>
+            <item.icon className="w-5 h-5" />
+            {item.name}
+          </Link>
+        ))}
       </nav>
 
       <div className="mt-auto pt-4 space-y-4 px-2">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400 font-semibold text-sm mb-1">
-            <Cloud className="w-4 h-4" /> Storage
+        <div className="p-4 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-2xl relative overflow-hidden">
+          <div className="absolute -right-4 -top-4 opacity-10">
+            <Cloud className="w-24 h-24" />
           </div>
-          <div className="flex justify-between items-center text-xs text-slate-600 dark:text-slate-400">
-            <span>{formatSize(analytics.totalSize)}</span>
-            <span>{analytics.totalFiles} files</span>
+          <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-3 relative z-10">
+            <Database className="w-5 h-5" />
+            <span className="font-semibold text-sm tracking-wide">STORAGE</span>
           </div>
-          <div className="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
-            <div className="bg-blue-500 h-full w-full opacity-50 animate-pulse"></div>
+          <div className="space-y-1 relative z-10">
+            <div className="flex items-baseline gap-1">
+              <span className="text-xl font-bold text-slate-800 dark:text-slate-100">{formatSize(analytics.totalSize)}</span>
+              <span className="text-sm font-medium text-slate-400">/ ∞</span>
+            </div>
+            <p className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wider mt-1">Unlimited</p>
+            <p className="text-[10px] text-slate-500 pt-1 border-t border-blue-100 dark:border-blue-900/30 mt-2">{analytics.totalFiles} files synced securely</p>
           </div>
-          <p className="text-xs text-slate-500 mt-1">Unlimited Telegram Drive</p>
         </div>
 
         <Link href="/drive/settings" className={getLinkClass("/drive/settings")}>

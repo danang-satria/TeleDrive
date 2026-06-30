@@ -14,6 +14,7 @@ model File {
   mimeType          String
   telegramMessageId Int      @unique
   isDeleted         Boolean  @default(false)
+  isStarred         Boolean  @default(false)
   deletedAt         DateTime?
   folderId          String?
   folder            Folder?  @relation(fields: [folderId], references: [id])
@@ -24,6 +25,7 @@ model File {
 model Folder {
   id        String   @id @default(uuid())
   name      String
+  isStarred Boolean  @default(false)
   parentId  String?
   parent    Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id])
   children  Folder[] @relation("FolderHierarchy")

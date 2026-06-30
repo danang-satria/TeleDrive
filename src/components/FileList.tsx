@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { FileIcon, Download, Trash2, FileText, Image as ImageIcon, Video, FileArchive, RefreshCcw, Share2, Link, MoreVertical } from "lucide-react";
+import { FileIcon, Download, Trash2, FileText, Image as ImageIcon, Video, FileArchive, RefreshCcw, Share2, Link, MoreVertical, Star, StarOff } from "lucide-react";
 import { useDriveStore } from "@/lib/store";
 
 export type FileRecord = {
@@ -9,7 +9,9 @@ export type FileRecord = {
   name: string;
   size: number;
   mimeType: string;
+  mimeType: string;
   createdAt: string;
+  isStarred?: boolean;
 };
 
 const formatSize = (bytes: number) => {
@@ -87,6 +89,15 @@ export default function FileList({
     } catch (e) {
       alert('Failed to generate link');
     }
+  };
+
+  const handleStar = async (id: string, currentStatus: boolean) => {
+    await fetch('/api/star', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, type: 'file', isStarred: !currentStatus })
+    });
+    onDelete(id); // Using onDelete as onRefresh here
   };
 
   const handleDragStart = (e: React.DragEvent, fileId: string) => {
@@ -199,6 +210,7 @@ export default function FileList({
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate" title={file.name}>
                   {file.name}
                 </span>
+                {file.isStarred && <Star className="w-4 h-4 text-yellow-400 fill-yellow-400 shrink-0" />}
               </div>
               
               <div className="relative shrink-0">
@@ -222,6 +234,10 @@ export default function FileList({
                         </a>
                         <button onClick={() => { handleShare(file.id); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors text-left">
                           <Link className="w-4 h-4" /> Get Share Link
+                        </button>
+                        <button onClick={() => { handleStar(file.id, !!file.isStarred); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:text-yellow-600 transition-colors text-left">
+                          {file.isStarred ? <StarOff className="w-4 h-4" /> : <Star className="w-4 h-4" />}
+                          {file.isStarred ? 'Remove from Starred' : 'Add to Starred'}
                         </button>
                         <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
                         <button onClick={() => { handleDelete(file.id); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left">
@@ -278,6 +294,7 @@ export default function FileList({
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300 max-w-[200px] md:max-w-xs lg:max-w-md truncate" title={file.name}>
                     {file.name}
                   </span>
+                  {file.isStarred && <Star className="w-4 h-4 text-yellow-400 fill-yellow-400 shrink-0" />}
                 </div>
               </td>
               <td className="px-6 py-4 text-sm text-slate-500 hidden md:table-cell">
@@ -308,6 +325,10 @@ export default function FileList({
                           </a>
                           <button onClick={() => { handleShare(file.id); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors text-left">
                             <Link className="w-4 h-4" /> Get Share Link
+                          </button>
+                          <button onClick={() => { handleStar(file.id, !!file.isStarred); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:text-yellow-600 transition-colors text-left">
+                            {file.isStarred ? <StarOff className="w-4 h-4" /> : <Star className="w-4 h-4" />}
+                            {file.isStarred ? 'Remove from Starred' : 'Add to Starred'}
                           </button>
                           <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
                           <button onClick={() => { handleDelete(file.id); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left">

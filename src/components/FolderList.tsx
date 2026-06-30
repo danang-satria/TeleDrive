@@ -1,5 +1,5 @@
 "use client";
-import { Folder, MoreVertical, Link as LinkIcon, Trash2, Download } from "lucide-react";
+import { Folder, MoreVertical, Link as LinkIcon, Trash2, Download, Star, StarOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
@@ -153,6 +153,15 @@ export default function FolderList({ folders, onRefresh }: { folders: any[], onR
     }
   };
 
+  const handleStar = async (id: string, currentStatus: boolean) => {
+    await fetch('/api/star', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, type: 'folder', isStarred: !currentStatus })
+    });
+    onRefresh();
+  };
+
   return (
     <div className="mb-6">
       <h3 className="text-sm font-semibold text-slate-500 mb-3 uppercase tracking-wider">Folders</h3>
@@ -187,6 +196,7 @@ export default function FolderList({ folders, onRefresh }: { folders: any[], onR
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate" title={folder.name}>
                 {folder.name}
               </span>
+              {folder.isStarred && <Star className="w-4 h-4 text-yellow-400 fill-yellow-400 shrink-0" />}
             </div>
             
             <div className="relative shrink-0 ml-2">
@@ -208,6 +218,10 @@ export default function FolderList({ folders, onRefresh }: { folders: any[], onR
                   </button>
                   <button onClick={() => { handleShare(folder.id); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors text-left">
                     <LinkIcon className="w-4 h-4" /> Get Share Link
+                  </button>
+                  <button onClick={() => { handleStar(folder.id, !!folder.isStarred); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:text-yellow-600 transition-colors text-left">
+                    {folder.isStarred ? <StarOff className="w-4 h-4" /> : <Star className="w-4 h-4" />}
+                    {folder.isStarred ? 'Remove from Starred' : 'Add to Starred'}
                   </button>
                   <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
                   <button onClick={() => { handleDelete(folder.id); setActiveMenuId(null); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left">

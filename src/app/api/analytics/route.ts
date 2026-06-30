@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { runLazyCron } from "@/lib/cron";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,9 @@ export async function GET() {
       _count: true,
       where: { isDeleted: false }
     });
+
+    // Fire and forget background cron
+    runLazyCron().catch(console.error);
 
     return NextResponse.json({
       totalSize: agg._sum?.size || 0,

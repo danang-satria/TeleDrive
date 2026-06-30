@@ -3,11 +3,21 @@ import { prisma } from "@/lib/db";
 
 export async function GET(req: Request) {
   try {
-    const { searchParams } = new URL(req.url);
-    const parentId = searchParams.get("parentId") || null;
-    
+    const url = new URL(req.url);
+    const parentId = url.searchParams.get("parentId");
+    const starred = url.searchParams.get("starred");
+
+    let whereClause: any = {};
+    if (starred === 'true') {
+      whereClause.isStarred = true;
+    } else if (parentId) {
+      whereClause.parentId = parentId;
+    } else {
+      whereClause.parentId = null;
+    }
+
     const folders = await prisma.folder.findMany({ 
-      where: { parentId },
+      where: whereClause,
       orderBy: { name: 'asc' }
     });
     

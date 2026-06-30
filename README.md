@@ -27,7 +27,12 @@ TeleDrive is a modern, personal cloud storage web application built to mimic the
 *   🗑️ **Smart Trash System**: Deleted files are safely moved to the Trash bin (with automatic 30-day cleanup) to prevent accidental data loss.
 *   🖼️ **File Previews**: Native inline preview for your uploaded images, videos, and documents through a beautiful modal dialog.
 *   🔄 **Real-Time UI**: Instant UI updates across components powered by **SWR** and **Zustand** state management.
-*   🔍 **Instant Search**: Find your files in milliseconds.
+*   ⭐ **Starred Files & Folders**: Pin your most important files for quick access via a dedicated Starred menu.
+*   📊 **Storage Analytics**: Dynamic UI showcasing your unlimited capability in the dashboard (e.g., "1.4 GB / ∞ Unlimited").
+*   🔗 **Shareable Public Links**: Generate and share public links allowing anyone to download files securely without logging in.
+*   🎬 **In-App Streaming**: Play video and audio files smoothly directly in your browser using HTTP Range Requests (206) piped straight from Telegram.
+*   🧹 **Smart Auto-Cleanup (Lazy Cron)**: Trashed files older than 30 days are automatically detected and permanently revoked from Telegram.
+*   🔍 **Advanced Search**: Find your files instantly with powerful, format-aware (mimeType) filtering capabilities.
 
 ## 🛠️ Technology Stack
 

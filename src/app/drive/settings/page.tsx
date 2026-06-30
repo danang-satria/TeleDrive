@@ -110,7 +110,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="max-w-4xl w-full p-6 mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-full mx-auto w-full space-y-6 flex-1 flex flex-col h-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <h1 className="text-2xl font-bold flex items-center gap-3">
               <Settings className="w-6 h-6 text-slate-400" />

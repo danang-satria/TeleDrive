@@ -18,7 +18,7 @@ export default function RecentPage() {
   }, []);
 
   return (
-    <div className="p-8 max-w-7xl mx-auto w-full space-y-8 flex-1 flex flex-col h-full">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-full mx-auto w-full space-y-6 flex-1 flex flex-col h-full">
       <div className="flex items-center gap-3">
         <Clock className="w-8 h-8 text-blue-600" />
         <div>
